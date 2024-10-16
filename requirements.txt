@@ -8,3 +8,6 @@ jupyterlab
 openpyxl
 plotly
 openpyxl
+streamlit
+pingouin
+statsmodels
