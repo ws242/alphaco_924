@@ -31,7 +31,7 @@ for i in range(10):
 print(result)
 
 # 답지
-code_result1 = [i * 2 for i in result]
+code_result1 = [i * 2 for i in result if]
 print(code_result1)
 
 # 코드 문제 2
