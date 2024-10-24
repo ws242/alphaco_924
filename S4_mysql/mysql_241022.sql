@@ -11,6 +11,13 @@ SELECT * FROM classicmodels.employees;
 USE classicmodels;
 SELECT * FROM employees;
 
+USE dataset2; -- 데이터베이스명
+SELECT * FROM dataset2; -- 테이블명
+
+-- dataset 폴더 ==> dataset2
+-- 데이터베이스명 : instacart, 모든 폴더 가져오기 
+-- 데이터베이스명 : titanic, full.csv == > 파일명 titanic으로 변경 후 불러오기
+
 -- SQL 기본문법
 /*
 SELECT 컬럼
