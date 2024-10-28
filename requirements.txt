@@ -11,3 +11,5 @@ openpyxl
 streamlit
 pingouin
 statsmodels
+mysql-connector-python
+pymysql

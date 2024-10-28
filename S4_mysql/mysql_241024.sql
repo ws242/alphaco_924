@@ -84,6 +84,7 @@ WHERE
     amount = (SELECT MIN(amount) FROM payments);
 
 -- 주문갯수가 50개 이상인, 주문번호와 주문날짜를 구하세요 
+-- 테이블명 : orders, orderdetails 
 SELECT ordernumber, orderdate
 FROM orders
 WHERE orderNumber IN (
@@ -92,10 +93,28 @@ WHERE orderNumber IN (
     WHERE quantityOrdered > 50
 );
 
--- 주문갯수가 50개 초과인, 주문번호와 주문날짜만 출력하세요
+-- 주문갯수가 50개 초과인, 주문번호와 주문 날짜를 출력하시오
 -- 테이블명 : orders, orderdetails 
-SELECT ordernumber, orderdate FROM orders 
-WHERE ordernumber IN ( SELECT ordernumber FROM orderdetails WHERE quantityOrdered > 50); 
+SELECT * FROM orders;
+SELECT * FROM orderdetails;
+SELECT 
+	A.orderNumber
+    , orderDate
+FROM orders A
+LEFT JOIN orderdetails B
+	ON A.ordernumber = B.ordernumber
+WHERE B.quantityOrdered > 50
+;
+
+SELECT
+	ordernumber
+    , orderdate
+FROM orders
+WHERE ordernumber IN (
+					SELECT ordernumber 
+					FROM orderdetails 
+					WHERE quantityOrdered > 50)
+;
 
 -- 문제 : 주문을 아예 하지 않은 고객명 조회
 -- 테이블 : customers, orders
@@ -106,8 +125,7 @@ WHERE customerNumber NOT IN ( SELECT DISTINCT customerNumber FROM orders );
 -- 인라인 뷰, FROM절 서브쿼리
 -- 임시 테이블 생성 느낌으로 접근
 -- 최대, 최소, 평균 
-SELECT stat
-	ordernumber, count(ordernumber) AS 주문건수 
+SELECT ordernumber, count(ordernumber) AS 주문건수 
 FROM orderdetails
 GROUP BY ordernumber
 ;
@@ -183,11 +201,17 @@ SELECT * FROM stat_rnk WHERE RNK BETWEEN 1 AND 5;
 -- 출력값 : SELECT * FROM product_sales
 -- 미국시장만 조회
 -- productname sales
-
-CREATE TABLE product_sales AS
-SELECT *
-FROM product_sales 
-WHERE B.country = "USA"
+CREATE TABLE classicmodels.product_sales AS
+SELECT D.productName, SUM(B.quantityOrdered * B.priceEach) AS sales
+FROM orders A
+LEFT JOIN orderdetails B
+ON A.orderNumber = B.orderNumber
+LEFT JOIN customers C 
+ON A.customerNumber = C.customerNumber
+LEFT JOIN products D 
+ON B.productCode = D.productCode
+WHERE C.country = "USA"
+GROUP BY D.productName
 ;
 
 CREATE TABLE classicmodels.product_sales AS
@@ -207,7 +231,6 @@ GROUP BY 1
 ;
 
 SELECT * FROM product_sales;
-
 SELECT 
 	*
     , ROW_NUMBER() OVER(ORDER BY SALES DESC) RNK
@@ -215,7 +238,7 @@ FROM product_sales
 LIMIT 5
 ; -- 인라인 뷰(조인문) & 윈도우함수 조합으로 코드 작성 
 
--- Churn Rate (%) 구하기 
+-- Churn Rate (%) 구하기 => 이탈률
 -- 이 테이블의 마지막 구매일 확인
 SELECT MAX(orderdate) AS mx_order
 FROM orders
@@ -310,12 +333,28 @@ SELECT * FROM sales;
 SELECT SUM(sale) FROM sales;
 SELECT fiscal_year, SUM(sale) FROM sales GROUP BY 1;
 
--- 윈도우 함수 사용
+-- 윈도우 함수 사용 
 SELECT 
 	fiscal_year
     , sales_employee
     , sale
-    , SUM(sale) OVER (PARTITION BY fiscal_year) total_sales
+    -- , SUM(sale) OVER (PARTITION BY fiscal_year) total_sales
+    -- , SUM(sale) OVER () total_sales
+    -- , SUM(sale) OVER (PARTITION BY fiscal_year ORDER BY sale) total_sales
+    -- , SUM(sale) OVER (ORDER BY fiscal_year) total_sales
+    -- , SUM(sale) OVER (ORDER BY fiscal_year ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS 복잡
+    -- , SUM(sale) OVER (ORDER BY fiscal_year ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS 복잡2
+	, SUM(sale) OVER (ORDER BY fiscal_year ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS 복잡3
 FROM 
 	sales
+;
+
+-- LAG() ==> pandas shift 메서드와 유사
+SELECT
+	fiscal_year
+    , sales_employee
+    , sale
+    , LAG(sale, 1, 0) OVER (PARTITION BY sales_employee ORDER BY fiscal_year) AS 이전연도
+FROM 
+	sales 
 ;

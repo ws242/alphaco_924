@@ -76,7 +76,7 @@ ORDER BY
 -- 순서 : FROM ==> WHERE ==> GROUP BY ==> HAVING ==> SELECT ==>...
 -- 위 코드에서 HAVING 절 추가 
 -- orderLineNumber에서 1만 별도로 조회
--- HAVING절은 단독으로 쓸 수 없음 
+-- HAVING절은 단독으로 쓸 수 없음 - GROUP BY와 함께 
 SELECT
 	productCode
     , orderLineNumber
@@ -401,6 +401,7 @@ SELECT
     , quantityOrdered
     , CASE WHEN quantityOrdered > 30 THEN "주문건수 30개 초과"
 	       WHEN quantityOrdered = 30 THEN "주문건수 30개"
+           ELSE "30개 미만"
            ELSE "30개 미만"
 	END AS 조건문
 FROM 
